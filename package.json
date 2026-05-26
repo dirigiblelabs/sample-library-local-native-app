@@ -1,25 +1,44 @@
 {
   "name": "sample-library-native-app-nodejs",
-  "version": "1.0.0",
-  "description": "A zero-dependency library management REST API built on native Node.js modules.",
+  "version": "2.0.0",
+  "description": "A TypeScript library-management REST API built on Fastify, Zod, and Pino.",
   "private": true,
   "type": "module",
-  "main": "src/server.js",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
-    "test": "node --test --test-reporter=spec 'test/**/*.test.js'"
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "dev": "tsx watch src/server.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
   },
   "engines": {
     "node": ">=22.0.0"
   },
   "keywords": [
     "nodejs",
+    "typescript",
+    "fastify",
     "rest",
     "library",
     "books",
-    "native",
-    "zero-dependency"
+    "zod"
   ],
-  "license": "EPL-2.0"
+  "license": "EPL-2.0",
+  "dependencies": {
+    "@fastify/basic-auth": "^6.2.0",
+    "@fastify/swagger": "^9.4.2",
+    "@fastify/swagger-ui": "^5.2.2",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.2.1",
+    "fastify-type-provider-zod": "^4.0.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3",
+    "vitest": "^4.1.7"
+  }
 }

@@ -1,53 +1,66 @@
 # sample-library-native-app-nodejs
 
-A small **library-management REST service** built entirely on the **Node.js
-standard library** — no Express, no Fastify, no runtime dependencies at all.
-The single source-of-truth is an in-process `Map`, the HTTP layer is
-`node:http`, the tests use `node:test`, and authentication is plain
-RFC 7617 HTTP Basic.
+A small **library-management REST service** written in **TypeScript** on the
+de-facto standard Node.js web stack: **Fastify** for HTTP, **Zod** for
+schema-first validation and serialization (typed end-to-end via
+[`fastify-type-provider-zod`](https://github.com/turkerdev/fastify-type-provider-zod)),
+**Pino** (bundled with Fastify) for structured logging, **`@fastify/basic-auth`**
+for HTTP Basic, and **`@fastify/swagger` + `@fastify/swagger-ui`** for an
+auto-generated OpenAPI surface at `/docs`. Tests run on **Vitest** using
+Fastify's `inject()` for fast, in-process HTTP simulation.
 
-It is intended as a reference for how a small, well-shaped REST service looks
-when written with only what ships in the Node.js LTS runtime.
+The book catalog itself is kept in an in-process `Map` — there is no database,
+no persistence, and no external infrastructure. All state is lost on restart.
 
 ---
 
 ## Highlights
 
-- **Zero runtime dependencies** — `package.json` has no `dependencies`.
-- **Latest Node.js LTS** — requires Node `>= 22.0.0` (engines field is enforced
-  by `npm`); ESM modules throughout.
-- **REST best-practice surface** for a `Book` resource — proper status codes,
-  `Location` header on create, `ETag`-friendly JSON, conditional validation,
-  pagination envelope, content-type negotiation.
-- **HTTP Basic authentication** with constant-time credential comparison and a
-  `WWW-Authenticate` challenge on `401`.
-- **Configurable port** (`PORT`, default `8080`) and credentials
-  (`AUTH_USER` / `AUTH_PASSWORD`, default `admin` / `admin`).
+- **TypeScript-first.** Strict `tsconfig` (`strict`, `noUncheckedIndexedAccess`,
+  `noImplicitOverride`, `noUnusedLocals/Parameters`, `NodeNext` module
+  resolution). Zod schemas are the single source of truth for runtime
+  validation **and** TypeScript types via `z.infer<...>`.
+- **Fastify 5** with the official Zod type provider — request/response bodies,
+  query strings, and path params are validated by Zod **and** typed in
+  handlers without manual annotation.
+- **OpenAPI 3** generated automatically from the Zod schemas and exposed at
+  `GET /docs/json` and `GET /docs` (Swagger UI).
+- **HTTP Basic auth** via `@fastify/basic-auth` with constant-time credential
+  comparison (`crypto.timingSafeEqual`) and a `WWW-Authenticate` challenge on
+  401. Default credentials `admin` / `admin`, overridable via environment.
+- **Configurable port** (`PORT`, default `8080`) and host/log-level via env;
+  configuration itself is validated by a Zod schema.
+- **Pino structured logging** out of the box.
 - **Graceful shutdown** on `SIGINT` / `SIGTERM`.
-- **19-case integration test suite** using `node:test`.
+- **19-case Vitest suite** covering auth, full CRUD, validation, error mapping,
+  pagination/filtering, and OpenAPI exposure.
 
 ---
 
 ## Requirements
 
 - Node.js **22.x LTS** or newer (`node --version` ≥ `v22.0.0`).
-- `npm` (only used to invoke the npm scripts; no packages to install).
+- `npm`.
 
 ---
 
 ## Quick start
 
 ```bash
-# Clone, then from the project root:
+npm install
+
+# Production mode (compile then run)
+npm run build
 npm start
+
+# Or development mode (tsx watch — no build step)
+npm run dev
 ```
 
-That's it — there is nothing to install because there are no dependencies.
-
-The server prints the URL it bound to:
+On startup the app logs the URL it bound to and the path of the Swagger UI:
 
 ```
-sample-library-native-app-nodejs listening on http://0.0.0.0:8080/rest/api/v1
+API ready at http://0.0.0.0:8080/rest/api/v1 — docs at http://0.0.0.0:8080/docs
 ```
 
 Try it:
@@ -57,65 +70,75 @@ curl -u admin:admin http://localhost:8080/rest/api/v1/books
 # => {"total":0,"offset":0,"limit":50,"items":[]}
 ```
 
+Open Swagger UI in a browser at <http://localhost:8080/docs> (you will be
+prompted for the credentials).
+
 ---
 
 ## Configuration
 
-All configuration is via environment variables. All values are optional.
+All configuration is via environment variables (loaded with `dotenv` from
+`.env` if present). Defaults are filled in by a Zod schema; invalid values
+will fail fast at startup. See [`.env.example`](./.env.example).
 
-| Variable        | Default   | Description                                     |
-| --------------- | --------- | ----------------------------------------------- |
-| `PORT`          | `8080`    | TCP port to listen on. `0` selects an ephemeral port (used by tests). |
-| `HOST`          | `0.0.0.0` | Interface to bind to.                           |
-| `AUTH_USER`     | `admin`   | Username accepted by HTTP Basic auth.           |
-| `AUTH_PASSWORD` | `admin`   | Password accepted by HTTP Basic auth.           |
+| Variable        | Default        | Description                                                     |
+| --------------- | -------------- | --------------------------------------------------------------- |
+| `PORT`          | `8080`         | TCP port to listen on. `0` selects an ephemeral port (tests).   |
+| `HOST`          | `0.0.0.0`      | Interface to bind to.                                           |
+| `AUTH_USER`     | `admin`        | Username accepted by HTTP Basic auth.                           |
+| `AUTH_PASSWORD` | `admin`        | Password accepted by HTTP Basic auth.                           |
+| `LOG_LEVEL`     | `info`         | Pino level — `trace`/`debug`/`info`/`warn`/`error`/`fatal`/`silent`. |
+| `API_BASE_PATH` | `/rest/api/v1` | Prefix mounted under (must start with `/`).                     |
 
 Example:
 
 ```bash
-PORT=9090 AUTH_USER=alice AUTH_PASSWORD='s3cret!' npm start
+PORT=9090 AUTH_USER=alice AUTH_PASSWORD='s3cret!' LOG_LEVEL=debug npm start
 ```
 
 > **Security note.** The default credentials (`admin` / `admin`) are for local
 > experimentation only. Override `AUTH_USER` and `AUTH_PASSWORD` for any
 > deployment beyond your laptop, and put the service behind TLS — HTTP Basic
-> sends credentials in clear text after base64-encoding.
+> sends credentials in clear text (after base64-encoding).
 
 ---
 
 ## Scripts
 
-| Command          | What it does                                                       |
-| ---------------- | ------------------------------------------------------------------ |
-| `npm start`      | Boot the server with `node src/server.js`.                         |
-| `npm run dev`    | Same as `start`, but with `--watch` for auto-restart on edits.     |
-| `npm test`       | Run the `node:test` integration suite with the spec reporter.      |
+| Command              | What it does                                                              |
+| -------------------- | ------------------------------------------------------------------------- |
+| `npm run dev`        | Run `src/server.ts` directly with `tsx watch` (auto-restart on edits).    |
+| `npm run build`      | Compile to `dist/` with `tsc`.                                            |
+| `npm start`          | Run the compiled `dist/server.js`.                                        |
+| `npm test`           | Run the Vitest suite once.                                                |
+| `npm run test:watch` | Run Vitest in watch mode.                                                 |
+| `npm run typecheck`  | Run `tsc --noEmit` for fast TS checking without producing output.         |
 
 ---
 
 ## REST API
 
-Base path: **`/rest/api/v1`**
+Base path: **`/rest/api/v1`** • All endpoints require HTTP Basic auth.
 
-The only resource exposed is `books`. All endpoints require HTTP Basic
-authentication.
+The Swagger UI at `/docs` (also behind auth) is the authoritative, interactive
+reference. The summary below mirrors what's in the OpenAPI document.
 
 ### Book resource
 
 | Field           | Type             | Notes                                                              |
 | --------------- | ---------------- | ------------------------------------------------------------------ |
-| `id`            | `string` (UUID)  | Server-assigned. Stable for the lifetime of the resource.          |
+| `id`            | `string` (UUID)  | Server-assigned, immutable.                                        |
 | `title`         | `string`         | Required, 1–500 chars, trimmed.                                    |
 | `author`        | `string`         | Required, 1–500 chars, trimmed.                                    |
-| `isbn`          | `string` *opt.*  | ISBN-10 or ISBN-13. Hyphens/spaces are stripped before validation. |
+| `isbn`          | `string` *opt.*  | ISBN-10 or ISBN-13. Hyphens/spaces stripped before validation.     |
 | `publishedYear` | `integer` *opt.* | `-3000 ≤ year ≤ currentYear + 5`.                                  |
 | `genre`         | `string` *opt.*  | Free-form, 1–500 chars.                                            |
 | `available`     | `boolean`        | Defaults to `true` on create.                                      |
 | `createdAt`     | `string` (ISO-8601) | Server-assigned, immutable.                                     |
 | `updatedAt`     | `string` (ISO-8601) | Updated on every write.                                         |
 
-ISBN uniqueness is enforced across the collection — attempting to create or
-update a book with an ISBN that is already in use returns `409 Conflict`.
+ISBN uniqueness is enforced across the collection — a duplicate ISBN returns
+`409 Conflict`.
 
 ### Endpoints
 
@@ -132,11 +155,11 @@ update a book with an ISBN that is already in use returns `409 Conflict`.
 
 | Param       | Default | Description                                                  |
 | ----------- | ------- | ------------------------------------------------------------ |
-| `offset`    | `0`     | Number of records to skip. Non-negative integer.             |
+| `offset`    | `0`     | Records to skip. Non-negative integer.                       |
 | `limit`     | `50`    | Page size, `1 ≤ limit ≤ 200`.                                |
 | `author`    | —       | Case-insensitive substring match on `author`.                |
 | `genre`     | —       | Case-insensitive exact match on `genre`.                     |
-| `available` | —       | Filter by availability, `true` or `false`.                   |
+| `available` | —       | `true` or `false`.                                           |
 
 Response envelope:
 
@@ -151,60 +174,57 @@ Response envelope:
 
 ### Error responses
 
-All errors are returned as JSON:
+All errors share one envelope:
 
 ```json
-{ "error": { "status": 400, "message": "Field \"author\" is required" } }
+{ "error": { "status": 400, "message": "Request validation failed", "details": [] } }
 ```
 
 | Status                  | When                                                              |
 | ----------------------- | ----------------------------------------------------------------- |
-| `400 Bad Request`       | Malformed JSON, missing/invalid fields, unknown fields, bad query. |
+| `400 Bad Request`       | Malformed JSON, schema validation failure, unknown fields, bad query. |
 | `401 Unauthorized`      | Missing or invalid HTTP Basic credentials. Response includes `WWW-Authenticate: Basic`. |
 | `404 Not Found`         | No route matches, or the book id does not exist.                  |
-| `405 Method Not Allowed`| Method is not supported on the matched path.                      |
 | `409 Conflict`          | Uniqueness violation (currently: duplicate `isbn`).               |
-| `415 Unsupported Media Type` | Request has a body with a non-`application/json` content-type. |
-| `500 Internal Server Error` | Unexpected server failure (logged with stack trace).          |
+| `500 Internal Server Error` | Unexpected failure (logged with stack trace).                 |
 
 ---
 
 ## Worked example
 
 ```bash
-# Create a book
+# Create
 curl -i -u admin:admin -H 'Content-Type: application/json' \
   -X POST http://localhost:8080/rest/api/v1/books \
   -d '{
-        "title": "The Pragmatic Programmer",
-        "author": "David Thomas, Andy Hunt",
-        "isbn": "978-0135957059",
-        "publishedYear": 2019,
+        "title": "Domain-Driven Design",
+        "author": "Eric Evans",
+        "isbn": "978-0321125217",
+        "publishedYear": 2003,
         "genre": "Software"
       }'
 # HTTP/1.1 201 Created
-# Location: /rest/api/v1/books/dcb51372-c3d4-4fbf-b8af-137fe7f37fa6
-# { "id": "dcb51372-...", "title": "The Pragmatic Programmer", ... }
+# Location: /rest/api/v1/books/c00f4b14-f4d7-41f0-a871-dcfe8d40eb64
 
 # List
 curl -u admin:admin http://localhost:8080/rest/api/v1/books
 
 # Fetch one
-curl -u admin:admin http://localhost:8080/rest/api/v1/books/dcb51372-c3d4-4fbf-b8af-137fe7f37fa6
+curl -u admin:admin http://localhost:8080/rest/api/v1/books/c00f4b14-f4d7-41f0-a871-dcfe8d40eb64
 
 # Partial update — mark as checked-out
 curl -u admin:admin -H 'Content-Type: application/json' \
-  -X PATCH http://localhost:8080/rest/api/v1/books/dcb51372-c3d4-4fbf-b8af-137fe7f37fa6 \
+  -X PATCH http://localhost:8080/rest/api/v1/books/c00f4b14-f4d7-41f0-a871-dcfe8d40eb64 \
   -d '{"available": false}'
 
 # Replace
 curl -u admin:admin -H 'Content-Type: application/json' \
-  -X PUT http://localhost:8080/rest/api/v1/books/dcb51372-c3d4-4fbf-b8af-137fe7f37fa6 \
-  -d '{"title":"The Pragmatic Programmer, 20th Anniv. Ed.","author":"David Thomas"}'
+  -X PUT http://localhost:8080/rest/api/v1/books/c00f4b14-f4d7-41f0-a871-dcfe8d40eb64 \
+  -d '{"title":"Domain-Driven Design, Reference","author":"Eric Evans"}'
 
 # Delete
 curl -i -u admin:admin -X DELETE \
-  http://localhost:8080/rest/api/v1/books/dcb51372-c3d4-4fbf-b8af-137fe7f37fa6
+  http://localhost:8080/rest/api/v1/books/c00f4b14-f4d7-41f0-a871-dcfe8d40eb64
 # HTTP/1.1 204 No Content
 ```
 
@@ -215,48 +235,87 @@ curl -i -u admin:admin -X DELETE \
 ```
 .
 ├── src/
-│   ├── server.js         # Entry point: loads config, starts server, handles shutdown.
-│   ├── app.js            # Wires store + router + auth into an http.Server.
-│   ├── config.js         # Env-driven configuration with validation.
-│   ├── auth.js           # HTTP Basic auth, constant-time compare.
-│   ├── router.js         # Path/method dispatch for /rest/api/v1/books.
-│   ├── http.js           # JSON body parsing, response helpers, error helpers.
-│   ├── errors.js         # HttpError class and constructors for common codes.
-│   ├── validation.js     # Field-by-field validation for the Book resource.
-│   ├── store.js          # In-memory Map + ISBN uniqueness index.
-│   └── handlers/
-│       └── books.js      # Per-endpoint handler functions.
+│   ├── server.ts                # Entry point: loads config, builds app, listens, handles shutdown.
+│   ├── app.ts                   # Fastify factory — wires Zod type provider, swagger, auth, routes, error handler.
+│   ├── config.ts                # Zod-validated environment configuration.
+│   ├── errors.ts                # HttpError class + helpers.
+│   ├── plugins/
+│   │   └── auth.ts              # @fastify/basic-auth registration + global onRequest hook.
+│   ├── routes/
+│   │   └── books.ts             # Books routes with Zod schemas on every request/response.
+│   ├── schemas/
+│   │   └── book.ts              # Zod schemas (create/replace/patch/list/response) + inferred TS types.
+│   └── services/
+│       └── bookStore.ts         # In-memory Map-backed store + ISBN uniqueness index.
 ├── test/
-│   ├── helpers.js        # Boots an isolated server on an ephemeral port.
-│   └── books.test.js     # node:test integration suite (19 cases).
+│   ├── helpers.ts               # Boots an isolated Fastify app on an ephemeral port.
+│   └── books.test.ts            # Vitest suite (19 cases) using fastify.inject().
+├── dist/                        # Compiled JS output (created by `npm run build`).
 ├── package.json
-├── LICENSE               # Eclipse Public License 2.0
+├── tsconfig.json
+├── vitest.config.ts
+├── .env.example
+├── LICENSE                      # Eclipse Public License 2.0
 └── README.md
 ```
 
 ---
 
+## Dependencies — and why
+
+Runtime:
+
+| Package                       | Purpose                                                            |
+| ----------------------------- | ------------------------------------------------------------------ |
+| `fastify`                     | The HTTP server. Mature, schema-first, faster than alternatives, first-class TypeScript support. |
+| `@fastify/basic-auth`         | Official Fastify plugin for HTTP Basic — used for the password check. |
+| `@fastify/swagger`            | Generates an OpenAPI 3 document from the route schemas.            |
+| `@fastify/swagger-ui`         | Serves the Swagger UI under `/docs`.                               |
+| `fastify-type-provider-zod`   | Wires Zod schemas into Fastify so requests/responses get validated and TypeScript types are inferred in handlers. |
+| `zod`                         | Runtime + type-level schema validation. Single source of truth for the Book shape. |
+| `dotenv`                      | Loads `.env` files into `process.env` during development.          |
+
+Dev:
+
+| Package          | Purpose                                                                |
+| ---------------- | ---------------------------------------------------------------------- |
+| `typescript`     | The compiler.                                                          |
+| `tsx`            | Runs `.ts` directly during development (`npm run dev`).                |
+| `vitest`         | Test runner. Native ESM/TS, fast, modern API.                          |
+| `@types/node`    | Node.js type declarations.                                             |
+
+---
+
 ## Design notes
 
-- **Native `node:http` only.** Routing is a small `switch` over
-  `(method, pathname)` in `src/router.js`. There is no middleware stack —
-  authentication, error mapping, and logging happen directly in
-  `src/app.js`. The whole thing is ~300 lines.
-- **In-memory store** lives in `src/store.js`. Books are stored in a
-  `Map<id, Book>` with an auxiliary `Map<isbn, id>` for the uniqueness
-  check. Everything is lost on restart — this is intentional.
-- **Validation is explicit** in `src/validation.js`: required fields,
-  type checks, length bounds, ISBN normalization, year range. Unknown
-  fields are rejected so typos surface as `400` instead of silent no-ops.
-- **`HttpError`** carries a status code and optional structured details;
-  the central catch in `src/app.js` translates it into a JSON error
-  response. Unknown errors become `500` and are logged with the full
-  stack.
-- **Auth comparisons** use `crypto.timingSafeEqual` against equal-length
-  buffers to avoid leaking credential length or content via timing.
-- **Tests** spin up the full HTTP server on an ephemeral port (`PORT=0`)
-  and exercise the API via `fetch` — they cover the happy path, every
-  error class, and the auth challenge headers.
+- **Schemas are the contract.** Each route declares Zod schemas for its
+  body / query / params / response. The Zod type provider:
+  1. **validates** incoming requests at the edge (returning a structured 400
+     with field-level details on failure), and
+  2. **types** `req.body` / `req.query` / `req.params` inside the handler so
+     they're fully typed, no manual casts.
+  3. feeds **`@fastify/swagger`** to produce the OpenAPI document.
+
+- **Auth is global.** `@fastify/basic-auth` is registered as a Fastify plugin
+  and applied as an `onRequest` hook at the root, so every route — including
+  `/docs` and `/docs/json` — requires credentials. Comparisons use
+  `crypto.timingSafeEqual` against equal-length buffers.
+
+- **Error handling is centralised.** `setErrorHandler` runs *before* routes
+  register (Fastify v5 binds the handler at route-registration time) and maps:
+  - Zod validation errors → `400` with field-level `details`.
+  - `HttpError` (thrown by the store) → its status code with structured body.
+  - Other errors with a 4xx `statusCode` (e.g. `@fastify/basic-auth`) → that
+    status, preserving the `WWW-Authenticate` header on 401.
+  - Anything else → `500` plus a logged stack trace.
+
+- **In-memory store** lives in `src/services/bookStore.ts`. Books are stored
+  in a `Map<id, Book>` with an auxiliary `Map<isbn, id>` for the uniqueness
+  check. Everything is lost on restart — intentional.
+
+- **Tests use `app.inject()`** (Fastify's built-in in-process HTTP simulator)
+  rather than a real listening socket. This avoids port management, is faster,
+  and matches the recommended Fastify testing pattern.
 
 ---
 
