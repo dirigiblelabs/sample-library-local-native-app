@@ -1,0 +1,73 @@
+{
+  "id": "sample-library-native-app-nodejs",
+  "name": "sample-library-native-app-nodejs",
+  "description": "Sample library REST service (Fastify + Zod) exposed as a Dirigible-managed local native application.",
+  "basePath": "library-native-app-nodejs",
+  "type": "local",
+  "config": {
+    "defaultPort": 8080,
+    "lifecycle": {
+      "start": {
+        "mode": "lazy",
+        "commands": [
+          {
+            "os": "mac",
+            "executable": "sh",
+            "dir": "sample-library-native-app-nodejs",
+            "arguments": [
+              { "name": "-c", "value": "npm install --silent --no-audit --no-fund && exec npm run build:start" }
+            ]
+          },
+          {
+            "os": "linux",
+            "executable": "sh",
+            "dir": "sample-library-native-app-nodejs",
+            "arguments": [
+              { "name": "-c", "value": "npm install --silent --no-audit --no-fund && exec npm run build:start" }
+            ]
+          },
+          {
+            "os": "windows",
+            "executable": "cmd.exe",
+            "dir": "sample-library-native-app-nodejs",
+            "arguments": [
+              { "name": "/c", "value": "npm install --silent --no-audit --no-fund && npm run build:start" }
+            ]
+          }
+        ]
+      },
+      "stop": {
+        "commands": [
+          {
+            "os": "mac",
+            "executable": "sh",
+            "dir": "sample-library-native-app-nodejs",
+            "arguments": [
+              { "name": "-c", "value": "PORT=\"$DIRIGIBLE_NATIVE_APP_PORT\" npm stop" }
+            ]
+          },
+          {
+            "os": "linux",
+            "executable": "sh",
+            "dir": "sample-library-native-app-nodejs",
+            "arguments": [
+              { "name": "-c", "value": "PORT=\"$DIRIGIBLE_NATIVE_APP_PORT\" npm stop" }
+            ]
+          }
+        ]
+      }
+    },
+    "security": {
+      "authentication": {
+        "type": "basic",
+        "credentials": {
+          "userEnvVariable": "${SAMPLE_APP_USER}.{admin}",
+          "passEnvVariable": "${SAMPLE_APP_PASS}.{admin}"
+        }
+      },
+      "exposedPaths": [
+        { "path": "/rest/api/v1", "scopes": [] }
+      ]
+    }
+  }
+}

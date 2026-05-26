@@ -144,6 +144,33 @@ node dist/server.js --help
 
 ---
 
+## Eclipse Dirigible integration
+
+This repo doubles as the canonical sample for Dirigible's
+[**native applications**](https://www.dirigible.io/help/) feature. The
+`sample-library-native-app-nodejs.native-app` artefact in the repo root tells
+Dirigible to spawn this server as a managed local process and proxy traffic to
+it under `/services/native-apps-proxy/v1/library-native-app-nodejs/...`.
+
+The contract:
+- Dirigible exports `DIRIGIBLE_NATIVE_APP_PORT` into the child process; the
+  `loadConfig` function in `src/config.ts` prefers that variable over `PORT`,
+  so the platform's resolved free port wins.
+- The lifecycle `start.commands` invoke `sh -c "npm install ... && exec npm run
+  build:start"` (or `cmd /c ...` on Windows) — bootstrapping `node_modules`
+  if needed, then handing off to the existing `npm run build:start` script.
+  `stop.commands` invoke `PORT=$DIRIGIBLE_NATIVE_APP_PORT npm stop` so the
+  existing `npm stop` script targets the right port.
+- HTTP Basic auth credentials come from Dirigible at proxy time: the artefact
+  references `${SAMPLE_APP_USER}.{admin}` and `${SAMPLE_APP_PASS}.{admin}`,
+  which Dirigible expands from its own environment (falling back to `admin`).
+  Clients of the proxy don't see these credentials; they hit the proxy and
+  Dirigible attaches `Authorization: Basic ...` outbound.
+- Only `/rest/api/v1` is whitelisted via `security.exposedPaths`; anything else
+  through the proxy answers `404`.
+
+---
+
 ## REST API
 
 Base path: **`/rest/api/v1`** • All endpoints require HTTP Basic auth.
