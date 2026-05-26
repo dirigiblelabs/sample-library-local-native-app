@@ -9,6 +9,7 @@ npm install            # required once; the project has runtime dependencies
 npm run dev            # tsx watch — runs src/server.ts directly, restarts on edits
 npm run build          # tsc -> dist/
 npm start              # node dist/server.js (run `build` first)
+npm stop               # kill process bound to $PORT (default 8080)
 npm test               # vitest run (single pass)
 npm run test:watch     # vitest in watch mode
 npm run typecheck      # tsc --noEmit
