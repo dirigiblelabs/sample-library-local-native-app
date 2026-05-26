@@ -49,9 +49,13 @@ no persistence, and no external infrastructure. All state is lost on restart.
 ```bash
 npm install
 
-# Production mode (compile then run)
-npm run build
-npm start
+# Production mode (compile then run) — one command
+npm run build:start
+
+# Same, with custom library info applied to GET /library
+LIBRARY_ADDRESS="42 Wallaby Way, Sydney" \
+LIBRARY_PHONE="+61-2-9999-0042" \
+  npm run build:start
 
 # Or development mode (tsx watch — no build step)
 npm run dev
@@ -112,6 +116,7 @@ PORT=9090 AUTH_USER=alice AUTH_PASSWORD='s3cret!' LOG_LEVEL=debug npm start
 | `npm run dev`        | Run `src/server.ts` directly with `tsx watch` (auto-restart on edits).    |
 | `npm run build`      | Compile to `dist/` with `tsc`.                                            |
 | `npm start`          | Run the compiled `dist/server.js`.                                        |
+| `npm run build:start`| Compile and then start in one command.                                    |
 | `npm stop`           | Send SIGTERM to whatever is bound to `$PORT` (default `8080`).            |
 | `npm test`           | Run the Vitest suite once.                                                |
 | `npm run test:watch` | Run Vitest in watch mode.                                                 |

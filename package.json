@@ -8,6 +8,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
+    "build:start": "npm run build && npm start",
     "stop": "lsof -ti tcp:${PORT:-8080} | xargs kill 2>/dev/null || true",
     "dev": "tsx watch src/server.ts",
     "test": "vitest run",

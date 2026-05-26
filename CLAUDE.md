@@ -9,7 +9,11 @@ npm install            # required once; the project has runtime dependencies
 npm run dev            # tsx watch — runs src/server.ts directly, restarts on edits
 npm run build          # tsc -> dist/
 npm start              # node dist/server.js (run `build` first)
+npm run build:start    # build + start in one command
 npm stop               # kill process bound to $PORT (default 8080)
+
+# build:start with library info overridden via env:
+LIBRARY_ADDRESS="42 Wallaby Way, Sydney" LIBRARY_PHONE="+61-2-9999-0042" npm run build:start
 npm test               # vitest run (single pass)
 npm run test:watch     # vitest in watch mode
 npm run typecheck      # tsc --noEmit
