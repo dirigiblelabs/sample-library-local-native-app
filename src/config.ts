@@ -10,6 +10,8 @@ const ConfigSchema = z.object({
   authPassword: z.string().min(1).default('admin'),
   logLevel: LogLevelSchema.default('info'),
   apiBasePath: z.string().startsWith('/').default('/rest/api/v1'),
+  libraryAddress: z.string().min(1).default('123 Library Lane, Booktown'),
+  libraryPhone: z.string().min(1).default('+1-555-0100'),
 });
 
 export type AppConfig = z.infer<typeof ConfigSchema>;
@@ -22,6 +24,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     authPassword: env.AUTH_PASSWORD,
     logLevel: env.LOG_LEVEL,
     apiBasePath: env.API_BASE_PATH,
+    libraryAddress: env.LIBRARY_ADDRESS,
+    libraryPhone: env.LIBRARY_PHONE,
   });
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');

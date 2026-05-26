@@ -89,6 +89,8 @@ will fail fast at startup. See [`.env.example`](./.env.example).
 | `AUTH_PASSWORD` | `admin`        | Password accepted by HTTP Basic auth.                           |
 | `LOG_LEVEL`     | `info`         | Pino level — `trace`/`debug`/`info`/`warn`/`error`/`fatal`/`silent`. |
 | `API_BASE_PATH` | `/rest/api/v1` | Prefix mounted under (must start with `/`).                     |
+| `LIBRARY_ADDRESS` | `123 Library Lane, Booktown` | Address returned by `GET /library`.                  |
+| `LIBRARY_PHONE`   | `+1-555-0100`                | Phone number returned by `GET /library`.             |
 
 Example:
 
@@ -110,6 +112,7 @@ PORT=9090 AUTH_USER=alice AUTH_PASSWORD='s3cret!' LOG_LEVEL=debug npm start
 | `npm run dev`        | Run `src/server.ts` directly with `tsx watch` (auto-restart on edits).    |
 | `npm run build`      | Compile to `dist/` with `tsc`.                                            |
 | `npm start`          | Run the compiled `dist/server.js`.                                        |
+| `npm stop`           | Send SIGTERM to whatever is bound to `$PORT` (default `8080`).            |
 | `npm test`           | Run the Vitest suite once.                                                |
 | `npm run test:watch` | Run Vitest in watch mode.                                                 |
 | `npm run typecheck`  | Run `tsc --noEmit` for fast TS checking without producing output.         |
@@ -150,6 +153,23 @@ ISBN uniqueness is enforced across the collection — a duplicate ISBN returns
 | `PUT`    | `/books/{id}`         | `200 OK`         | Replace a book (full representation).      |
 | `PATCH`  | `/books/{id}`         | `200 OK`         | Partial update — send only the fields you want to change. |
 | `DELETE` | `/books/{id}`         | `204 No Content` | Delete a book.                             |
+| `GET`    | `/library`            | `200 OK`         | Read-only library info (address, phone). Defaults from env. |
+
+### Library resource
+
+A read-only singleton describing the library itself. Both fields are optional
+from the environment's perspective — defaults are applied by the Zod schema if
+the matching env var is unset.
+
+| Field         | Type     | Default                        | Source env var      |
+| ------------- | -------- | ------------------------------ | ------------------- |
+| `address`     | `string` | `123 Library Lane, Booktown`   | `LIBRARY_ADDRESS`   |
+| `phoneNumber` | `string` | `+1-555-0100`                  | `LIBRARY_PHONE`     |
+
+```bash
+curl -u admin:admin http://localhost:8080/rest/api/v1/library
+# => {"address":"123 Library Lane, Booktown","phoneNumber":"+1-555-0100"}
+```
 
 ### Listing — query parameters
 
