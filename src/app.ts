@@ -11,6 +11,7 @@ import type { AppConfig } from './config.js';
 import { HttpError } from './errors.js';
 import authPlugin from './plugins/auth.js';
 import booksRoutes from './routes/books.js';
+import libraryRoutes from './routes/library.js';
 import { BookStore } from './services/bookStore.js';
 
 export interface BuiltApp {
@@ -93,6 +94,7 @@ export async function buildApp(config: AppConfig): Promise<BuiltApp> {
 
   const store = new BookStore();
   await app.register(booksRoutes, { store, apiBasePath: config.apiBasePath });
+  await app.register(libraryRoutes, { config, apiBasePath: config.apiBasePath });
 
   return { app, store };
 }

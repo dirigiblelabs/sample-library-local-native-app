@@ -28,7 +28,7 @@ To see request/error logs while debugging tests, set `TEST_LOG=debug` (defaults 
 TEST_LOG=debug npm test
 ```
 
-Configuration is via env (see `.env.example`): `PORT` (default `8080`), `HOST`, `AUTH_USER` / `AUTH_PASSWORD` (default `admin`/`admin`), `LOG_LEVEL`, `API_BASE_PATH` (default `/rest/api/v1`). Bad values throw on startup — `loadConfig` validates with Zod.
+Configuration is via env (see `.env.example`): `PORT` (default `8080`), `HOST`, `AUTH_USER` / `AUTH_PASSWORD` (default `admin`/`admin`), `LOG_LEVEL`, `API_BASE_PATH` (default `/rest/api/v1`), `LIBRARY_ADDRESS` / `LIBRARY_PHONE` (defaults wired into `loadConfig`, surfaced read-only at `GET ${API_BASE_PATH}/library`). Bad values throw on startup — `loadConfig` validates with Zod.
 
 ## Architecture
 
