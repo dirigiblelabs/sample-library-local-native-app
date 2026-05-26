@@ -9,11 +9,13 @@ npm install            # required once; the project has runtime dependencies
 npm run dev            # tsx watch — runs src/server.ts directly, restarts on edits
 npm run build          # tsc -> dist/
 npm start              # node dist/server.js (run `build` first)
-npm run build:start    # build + start in one command
+npm run build:start    # build + start in one command (chains tsc then node dist/server.js so CLI args forward through `--`)
 npm stop               # kill process bound to $PORT (default 8080)
 
-# build:start with library info overridden via env:
+# Overriding library info — three equivalent forms (CLI > env > Zod default):
 LIBRARY_ADDRESS="42 Wallaby Way, Sydney" LIBRARY_PHONE="+61-2-9999-0042" npm run build:start
+npm run build:start -- --library-address="42 Wallaby Way, Sydney" --library-phone="+61-2-9999-0042"
+node dist/server.js --help   # full flag list; every env var has a matching --kebab-case flag
 npm test               # vitest run (single pass)
 npm run test:watch     # vitest in watch mode
 npm run typecheck      # tsc --noEmit
@@ -33,6 +35,8 @@ TEST_LOG=debug npm test
 ```
 
 Configuration is via env (see `.env.example`): `PORT` (default `8080`), `HOST`, `AUTH_USER` / `AUTH_PASSWORD` (default `admin`/`admin`), `LOG_LEVEL`, `API_BASE_PATH` (default `/rest/api/v1`), `LIBRARY_ADDRESS` / `LIBRARY_PHONE` (defaults wired into `loadConfig`, surfaced read-only at `GET ${API_BASE_PATH}/library`). Bad values throw on startup — `loadConfig` validates with Zod.
+
+Every env var also has a matching `--kebab-case` CLI flag — `src/cli.ts` parses them with `node:util.parseArgs` and overlays them onto `process.env` before `loadConfig` runs (CLI > env > default). Adding a new env-driven setting therefore means: extend `ConfigSchema`, add the env key in `loadConfig`, *and* add the flag in `src/cli.ts` (plus a row in `USAGE`).
 
 ## Architecture
 

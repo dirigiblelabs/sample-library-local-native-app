@@ -1,8 +1,23 @@
 import { buildApp } from './app.js';
+import { parseCliOverrides, USAGE } from './cli.js';
 import { loadConfig } from './config.js';
 
 async function main(): Promise<void> {
-  const config = loadConfig();
+  const parsed = (() => {
+    try {
+      return parseCliOverrides(process.argv.slice(2));
+    } catch (err) {
+      process.stderr.write(`${(err as Error).message}\n\n${USAGE}`);
+      process.exit(2);
+    }
+  })();
+
+  if (parsed.help) {
+    process.stdout.write(USAGE);
+    return;
+  }
+
+  const config = loadConfig({ ...process.env, ...parsed.envOverrides });
   const { app } = await buildApp(config);
 
   const shutdown = async (signal: string): Promise<void> => {

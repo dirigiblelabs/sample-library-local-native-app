@@ -52,10 +52,15 @@ npm install
 # Production mode (compile then run) — one command
 npm run build:start
 
-# Same, with custom library info applied to GET /library
+# Same, with custom library info applied to GET /library, via env vars
 LIBRARY_ADDRESS="42 Wallaby Way, Sydney" \
 LIBRARY_PHONE="+61-2-9999-0042" \
   npm run build:start
+
+# Same, via CLI flags forwarded to the server (note the `--` separator):
+npm run build:start -- \
+  --library-address="42 Wallaby Way, Sydney" \
+  --library-phone="+61-2-9999-0042"
 
 # Or development mode (tsx watch — no build step)
 npm run dev
@@ -96,10 +101,25 @@ will fail fast at startup. See [`.env.example`](./.env.example).
 | `LIBRARY_ADDRESS` | `123 Library Lane, Booktown` | Address returned by `GET /library`.                  |
 | `LIBRARY_PHONE`   | `+1-555-0100`                | Phone number returned by `GET /library`.             |
 
-Example:
+Example (env vars):
 
 ```bash
 PORT=9090 AUTH_USER=alice AUTH_PASSWORD='s3cret!' LOG_LEVEL=debug npm start
+```
+
+Every setting can also be supplied as a long CLI flag. The kebab-case flag
+matches the env-var name, and CLI flags win over env vars, which win over
+defaults. Use `--` after the `npm run` script to forward flags through npm:
+
+```bash
+npm run build:start -- \
+  --port=9090 --auth-user=alice --auth-password='s3cret!' --log-level=debug
+
+# Direct (no npm) — same flags, no `--` needed
+node dist/server.js --port=9090 --library-address="42 Wallaby Way"
+
+# Show usage:
+node dist/server.js --help
 ```
 
 > **Security note.** The default credentials (`admin` / `admin`) are for local
