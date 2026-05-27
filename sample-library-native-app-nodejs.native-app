@@ -61,8 +61,8 @@
       "authentication": {
         "type": "basic",
         "credentials": {
-          "userEnvVariable": "${SAMPLE_APP_USER}.{admin}",
-          "passEnvVariable": "${SAMPLE_APP_PASS}.{admin}"
+          "user": "${SAMPLE_APP_USER}.{admin}",
+          "password": "${SAMPLE_APP_PASS}.{admin}"
         }
       },
       "exposedPaths": [

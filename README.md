@@ -162,8 +162,9 @@ The contract:
   `stop.commands` invoke `PORT=$DIRIGIBLE_NATIVE_APP_PORT npm stop` so the
   existing `npm stop` script targets the right port.
 - HTTP Basic auth credentials come from Dirigible at proxy time: the artefact
-  references `${SAMPLE_APP_USER}.{admin}` and `${SAMPLE_APP_PASS}.{admin}`,
-  which Dirigible expands from its own environment (falling back to `admin`).
+  declares `user`/`password` in the `credentials` block as
+  `${SAMPLE_APP_USER}.{admin}` / `${SAMPLE_APP_PASS}.{admin}`, which Dirigible
+  expands from its own environment (falling back to `admin`).
   Clients of the proxy don't see these credentials; they hit the proxy and
   Dirigible attaches `Authorization: Basic ...` outbound.
 - Only `/rest/api/v1` is whitelisted via `security.exposedPaths`; anything else
