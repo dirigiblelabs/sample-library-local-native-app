@@ -167,7 +167,9 @@ The contract:
   Clients of the proxy don't see these credentials; they hit the proxy and
   Dirigible attaches `Authorization: Basic ...` outbound.
 - Only `/rest/api/v1` is whitelisted via `security.exposedPaths`; anything else
-  through the proxy answers `404`.
+  through the proxy answers `404`. The whitelist requires the **`library-admin`**
+  role (defined in `roles.roles` and registered by Dirigible's role
+  synchronizer), so callers must be assigned that role — `403` otherwise.
 
 ---
 

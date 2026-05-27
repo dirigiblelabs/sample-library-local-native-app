@@ -1,0 +1,6 @@
+[
+    {
+        "name": "library-admin",
+        "description": "Permission to call the library REST API exposed by sample-library-native-app-nodejs through the Dirigible native-app proxy."
+    }
+]
