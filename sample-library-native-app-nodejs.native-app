@@ -15,7 +15,10 @@
             "executable": "sh",
             "dir": "sample-library-native-app-nodejs",
             "arguments": [
-              { "name": "-c", "value": "npm install --silent --no-audit --no-fund && exec npm run build:start" }
+              { "name": "-c", "value": "npm install --silent --no-audit --no-fund && exec npm run build:start -- \"$@\"" },
+              { "name": "sample-library-native-app-nodejs", "value": "" },
+              { "name": "--library-address", "value": "42 Wallaby Way, Sydney" },
+              { "name": "--library-phone", "value": "+61-2-9999-0042" }
             ]
           },
           {
@@ -23,7 +26,10 @@
             "executable": "sh",
             "dir": "sample-library-native-app-nodejs",
             "arguments": [
-              { "name": "-c", "value": "npm install --silent --no-audit --no-fund && exec npm run build:start" }
+              { "name": "-c", "value": "npm install --silent --no-audit --no-fund && exec npm run build:start -- \"$@\"" },
+              { "name": "sample-library-native-app-nodejs", "value": "" },
+              { "name": "--library-address", "value": "42 Wallaby Way, Sydney" },
+              { "name": "--library-phone", "value": "+61-2-9999-0042" }
             ]
           },
           {
@@ -31,7 +37,7 @@
             "executable": "cmd.exe",
             "dir": "sample-library-native-app-nodejs",
             "arguments": [
-              { "name": "/c", "value": "npm install --silent --no-audit --no-fund && npm run build:start" }
+              { "name": "/c", "value": "npm install --silent --no-audit --no-fund && npm run build:start -- --library-address=\"42 Wallaby Way, Sydney\" --library-phone=\"+61-2-9999-0042\"" }
             ]
           }
         ]
