@@ -157,8 +157,13 @@ The contract:
   `loadConfig` function in `src/config.ts` prefers that variable over `PORT`,
   so the platform's resolved free port wins.
 - The lifecycle `start.commands` invoke `sh -c "npm install ... && exec npm run
-  build:start"` (or `cmd /c ...` on Windows) — bootstrapping `node_modules`
-  if needed, then handing off to the existing `npm run build:start` script.
+  build:start -- \"$@\""` (or `cmd /c ...` on Windows) — bootstrapping
+  `node_modules` if needed, then handing off to the existing `npm run
+  build:start` script. The trailing entries in `arguments[]` are positional
+  args to the shell; the script forwards them via `"$@"` to
+  `node dist/server.js`. The shipped artefact uses this to set
+  `--library-address` and `--library-phone` at startup, demonstrating how
+  authors can declare ad-hoc CLI overrides in their `.native-app`.
   `stop.commands` invoke `PORT=$DIRIGIBLE_NATIVE_APP_PORT npm stop` so the
   existing `npm stop` script targets the right port.
 - HTTP Basic auth credentials come from Dirigible at proxy time: the artefact
