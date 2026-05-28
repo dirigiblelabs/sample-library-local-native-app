@@ -59,6 +59,14 @@
             "arguments": [
               { "name": "-c", "value": "PORT=\"$DIRIGIBLE_NATIVE_APP_PORT\" npm stop" }
             ]
+          },
+          {
+            "os": "windows",
+            "executable": "cmd.exe",
+            "dir": "sample-library-native-app-nodejs",
+            "arguments": [
+              { "name": "/c", "value": "set \"PORT=%DIRIGIBLE_NATIVE_APP_PORT%\" && npm run stop:win" }
+            ]
           }
         ]
       }

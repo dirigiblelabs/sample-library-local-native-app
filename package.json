@@ -10,6 +10,7 @@
     "start": "node dist/server.js",
     "build:start": "npm run build && node dist/server.js",
     "stop": "if [ -z \"$PORT\" ]; then echo 'ERROR: PORT env var is empty; refusing to stop to avoid killing an unrelated process.' >&2; exit 1; fi; lsof -ti tcp:\"$PORT\" | xargs kill 2>/dev/null || true",
+    "stop:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stop-native-app.ps1",
     "dev": "tsx watch src/server.ts",
     "test": "vitest run",
     "test:watch": "vitest",
