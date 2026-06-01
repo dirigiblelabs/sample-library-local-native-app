@@ -137,7 +137,6 @@ node dist/server.js --help
 | `npm run build`      | Compile to `dist/` with `tsc`.                                            |
 | `npm start`          | Run the compiled `dist/server.js`.                                        |
 | `npm run build:start`| Compile and then start in one command.                                    |
-| `npm stop`           | Send SIGTERM to whatever is bound to `$PORT` (default `8080`).            |
 | `npm test`           | Run the Vitest suite once.                                                |
 | `npm run test:watch` | Run Vitest in watch mode.                                                 |
 | `npm run typecheck`  | Run `tsc --noEmit` for fast TS checking without producing output.         |
@@ -164,8 +163,12 @@ The contract:
   `node dist/server.js`. The shipped artefact uses this to set
   `--library-address` and `--library-phone` at startup, demonstrating how
   authors can declare ad-hoc CLI overrides in their `.native-app`.
-  `stop.commands` invoke `PORT=$DIRIGIBLE_NATIVE_APP_PORT npm stop` so the
-  existing `npm stop` script targets the right port.
+- **No `lifecycle.stop` is declared.** Dirigible's own `Process.destroy()` sends
+  SIGTERM to the held PID, which Node's default signal handling + the server's
+  shutdown hook in `src/server.ts` handles cleanly. Authoring a custom stop
+  script that kills by port (`lsof | xargs kill` and similar) is dangerous —
+  it will also kill the Dirigible JVM if Spring Cloud Gateway's HttpClient
+  has an idle keep-alive connection to the upstream port.
 - HTTP Basic auth credentials come from Dirigible at proxy time: the artefact
   declares `user`/`password` in the `credentials` block as
   `${SAMPLE_APP_USER}.{admin}` / `${SAMPLE_APP_PASS}.{admin}`, which Dirigible
