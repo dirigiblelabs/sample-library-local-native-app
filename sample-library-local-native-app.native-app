@@ -1,6 +1,6 @@
 {
-  "id": "sample-library-native-app-nodejs",
-  "name": "sample-library-native-app-nodejs",
+  "id": "sample-library-local-native-app",
+  "name": "sample-library-local-native-app",
   "description": "Sample library REST service (Fastify + Zod) exposed as a Dirigible-managed local native application.",
   "basePath": "library-native-app-nodejs",
   "type": "local",
@@ -13,10 +13,9 @@
           {
             "os": "mac",
             "executable": "sh",
-            "dir": "sample-library-native-app-nodejs",
             "arguments": [
               { "name": "-c", "value": "npm install --silent --no-audit --no-fund && exec npm run build:start -- \"$@\"" },
-              { "name": "sample-library-native-app-nodejs", "value": "" },
+              { "name": "sample-library-local-native-app", "value": "" },
               { "name": "--library-address", "value": "42 Wallaby Way, Sydney" },
               { "name": "--library-phone", "value": "+61-2-9999-0042" }
             ]
@@ -24,10 +23,9 @@
           {
             "os": "linux",
             "executable": "sh",
-            "dir": "sample-library-native-app-nodejs",
             "arguments": [
               { "name": "-c", "value": "npm install --silent --no-audit --no-fund && exec npm run build:start -- \"$@\"" },
-              { "name": "sample-library-native-app-nodejs", "value": "" },
+              { "name": "sample-library-local-native-app", "value": "" },
               { "name": "--library-address", "value": "42 Wallaby Way, Sydney" },
               { "name": "--library-phone", "value": "+61-2-9999-0042" }
             ]
@@ -35,7 +33,6 @@
           {
             "os": "windows",
             "executable": "cmd.exe",
-            "dir": "sample-library-native-app-nodejs",
             "arguments": [
               { "name": "/c", "value": "npm install --silent --no-audit --no-fund && npm run build:start -- --library-address=\"42 Wallaby Way, Sydney\" --library-phone=\"+61-2-9999-0042\"" }
             ]
@@ -47,7 +44,6 @@
           {
             "os": "mac",
             "executable": "sh",
-            "dir": "sample-library-native-app-nodejs",
             "arguments": [
               { "name": "-c", "value": "PORT=\"$DIRIGIBLE_NATIVE_APP_PORT\" npm stop" }
             ]
@@ -55,7 +51,6 @@
           {
             "os": "linux",
             "executable": "sh",
-            "dir": "sample-library-native-app-nodejs",
             "arguments": [
               { "name": "-c", "value": "PORT=\"$DIRIGIBLE_NATIVE_APP_PORT\" npm stop" }
             ]
@@ -63,7 +58,6 @@
           {
             "os": "windows",
             "executable": "cmd.exe",
-            "dir": "sample-library-native-app-nodejs",
             "arguments": [
               { "name": "/c", "value": "set \"PORT=%DIRIGIBLE_NATIVE_APP_PORT%\" && npm run stop:win" }
             ]
