@@ -137,6 +137,8 @@ node dist/server.js --help
 | `npm run build`      | Compile to `dist/` with `tsc`.                                            |
 | `npm start`          | Run the compiled `dist/server.js`.                                        |
 | `npm run build:start`| Compile and then start in one command.                                    |
+| `npm stop`           | SIGTERM the Dirigible-tracked PID (`$DIRIGIBLE_NATIVE_APP_PID`). POSIX only. |
+| `npm run stop:win`   | Windows equivalent via `scripts/stop-native-app.ps1` (`taskkill /PID … /T`). |
 | `npm test`           | Run the Vitest suite once.                                                |
 | `npm run test:watch` | Run Vitest in watch mode.                                                 |
 | `npm run typecheck`  | Run `tsc --noEmit` for fast TS checking without producing output.         |
@@ -163,17 +165,18 @@ The contract:
   `node dist/server.js`. The shipped artefact uses this to set
   `--library-address` and `--library-phone` at startup, demonstrating how
   authors can declare ad-hoc CLI overrides in their `.native-app`.
-- **No `lifecycle.stop` is declared.** Dirigible's own `Process.destroy()`
-  sends SIGTERM to the held PID, which Node's default signal handling +
-  the server's shutdown hook in `src/server.ts` handles cleanly. Authoring
-  a custom stop script that kills by port (`lsof | xargs kill` and
-  similar) is dangerous: `lsof -ti tcp:<port>` returns *every* PID with a
-  TCP FD on the port — listeners *and* keep-alive clients — so it also
-  kills the Dirigible JVM (Spring Cloud Gateway's HttpClient maintains
+- **`lifecycle.stop`** invokes `npm stop` (POSIX) or `npm run stop:win`
+  (Windows) — both target **only** the held PID Dirigible exports as
+  `$DIRIGIBLE_NATIVE_APP_PID`. The scripts here are kept as a reference
+  example for authors who need a `lifecycle.stop`. The platform's own
+  `Process.destroy()` runs after the script as a fallback, so for this
+  Node service the custom stop is strictly redundant — its purpose is
+  documentation by example. **Critical rule for any author-supplied stop
+  script: target `$DIRIGIBLE_NATIVE_APP_PID`, never `lsof -ti tcp:<port> |
+  xargs kill` or similar.** `lsof` returns every PID with a TCP FD on the
+  port — listeners *and* keep-alive clients — so port-based killing also
+  takes down the Dirigible JVM (Spring Cloud Gateway's HttpClient keeps
   an idle connection to the upstream port after every proxy round-trip).
-  If you absolutely need a custom stop script, target the held root PID
-  the platform exports to the stop subprocess env as
-  `$DIRIGIBLE_NATIVE_APP_PID` (e.g. `kill "$DIRIGIBLE_NATIVE_APP_PID"`).
 - HTTP Basic auth credentials come from Dirigible at proxy time: the artefact
   declares `user`/`password` in the `credentials` block as
   `${SAMPLE_APP_USER}.{admin}` / `${SAMPLE_APP_PASS}.{admin}`, which Dirigible

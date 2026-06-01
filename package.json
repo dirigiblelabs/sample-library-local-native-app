@@ -9,6 +9,8 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "build:start": "npm run build && node dist/server.js",
+    "stop": "if [ -z \"$DIRIGIBLE_NATIVE_APP_PID\" ]; then echo 'ERROR: DIRIGIBLE_NATIVE_APP_PID is not set; refusing to stop (this script must be invoked from a Dirigible-spawned stop subprocess).' >&2; exit 1; fi; kill \"$DIRIGIBLE_NATIVE_APP_PID\" 2>/dev/null || true",
+    "stop:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/stop-native-app.ps1",
     "dev": "tsx watch src/server.ts",
     "test": "vitest run",
     "test:watch": "vitest",
