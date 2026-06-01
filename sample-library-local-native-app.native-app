@@ -38,31 +38,6 @@
             ]
           }
         ]
-      },
-      "stop": {
-        "commands": [
-          {
-            "os": "mac",
-            "executable": "sh",
-            "arguments": [
-              { "name": "-c", "value": "PORT=\"$DIRIGIBLE_NATIVE_APP_PORT\" npm stop" }
-            ]
-          },
-          {
-            "os": "linux",
-            "executable": "sh",
-            "arguments": [
-              { "name": "-c", "value": "PORT=\"$DIRIGIBLE_NATIVE_APP_PORT\" npm stop" }
-            ]
-          },
-          {
-            "os": "windows",
-            "executable": "cmd.exe",
-            "arguments": [
-              { "name": "/c", "value": "set \"PORT=%DIRIGIBLE_NATIVE_APP_PORT%\" && npm run stop:win" }
-            ]
-          }
-        ]
       }
     },
     "security": {
