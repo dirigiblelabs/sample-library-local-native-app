@@ -38,6 +38,31 @@
             ]
           }
         ]
+      },
+      "stop": {
+        "commands": [
+          {
+            "os": "mac",
+            "executable": "sh",
+            "arguments": [
+              { "name": "-c", "value": "npm stop" }
+            ]
+          },
+          {
+            "os": "linux",
+            "executable": "sh",
+            "arguments": [
+              { "name": "-c", "value": "npm stop" }
+            ]
+          },
+          {
+            "os": "windows",
+            "executable": "cmd.exe",
+            "arguments": [
+              { "name": "/c", "value": "npm run stop:win" }
+            ]
+          }
+        ]
       }
     },
     "security": {
