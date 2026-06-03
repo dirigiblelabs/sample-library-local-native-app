@@ -149,7 +149,7 @@ node dist/server.js --help
 
 This repo doubles as the canonical sample for Dirigible's
 [**native applications**](https://www.dirigible.io/help/) feature. The
-`sample-library-native-app-nodejs.native-app` artefact in the repo root tells
+`sample-library-local-native-app.nativeapp` artefact in the repo root tells
 Dirigible to spawn this server as a managed local process and proxy traffic to
 it under `/services/native-apps-proxy/v1/library-native-app-nodejs/...`.
 
@@ -164,7 +164,7 @@ The contract:
   args to the shell; the script forwards them via `"$@"` to
   `node dist/server.js`. The shipped artefact uses this to set
   `--library-address` and `--library-phone` at startup, demonstrating how
-  authors can declare ad-hoc CLI overrides in their `.native-app`.
+  authors can declare ad-hoc CLI overrides in their `.nativeapp`.
 - **`lifecycle.stop`** invokes `npm stop` (POSIX) or `npm run stop:win`
   (Windows) — both target **only** the held PID Dirigible exports as
   `$DIRIGIBLE_NATIVE_APP_PID`. The scripts here are kept as a reference
